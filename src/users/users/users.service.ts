@@ -19,11 +19,17 @@ export class UsersService {
         }
 
         await user.$set('roles', [role.id])
+        user.roles = [role]
         return user;
     }
 
     async getAllUsers() {
         const users = await this.userRepository.findAll({include: {all: true}});
         return users;
+    }
+
+    async getUserByPhone(phone: string){
+        const user = await this.userRepository.findOne({where: {phone}, include: {all: true}})
+        return user;
     }
 }
