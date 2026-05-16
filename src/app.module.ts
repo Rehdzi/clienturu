@@ -1,20 +1,34 @@
-import { Module } from "@nestjs/common";
-import { SequelizeModule } from "@nestjs/sequelize";
-import { UsersModule } from "./users/users/users.module";
-import { ConfigModule } from "@nestjs/config";
-import { User } from "./users/users/users.model";
-import { RolesModule } from './roles/roles.module';
-import { Role } from "./roles/roles.model";
-import { UserRoles } from "./roles/user-roles-model";
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
+import { Role } from './roles/roles.model';
+import { RolesModule } from './roles/roles.module';
+import { UserRoles } from './roles/user-roles-model';
+import { User } from './users/users/users.model';
+import { UsersModule } from './users/users/users.module';
 
 @Module({
-    controllers: [],
-    providers: [],
-    imports: [
+  controllers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
+  imports: [
     ConfigModule.forRoot({
-        envFilePath: '.env'
+      envFilePath: '.env',
+      isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 100,
+      },
+    ]),
     SequelizeModule.forRoot({
       dialect: 'postgres',
       host: process.env.POSTGRES_HOST,
@@ -23,13 +37,11 @@ import { AuthModule } from './auth/auth.module';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       models: [User, Role, UserRoles],
-      autoLoadModels: true
+      autoLoadModels: true,
     }),
     UsersModule,
     RolesModule,
     AuthModule,
   ],
 })
-export class AppModule {
-    
-}
+export class AppModule {}
