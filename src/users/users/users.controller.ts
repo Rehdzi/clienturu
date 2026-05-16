@@ -1,27 +1,20 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UsersService } from './users.service';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { User } from './users.model';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { User } from './users.model';
+import { UsersService } from './users.service';
 
+@ApiTags('Users')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
+  constructor(private usersService: UsersService) {}
 
-    constructor(private usersService: UsersService) {}
-
-    @ApiOperation({summary: 'User creation'})           //  <-- Endpoint name
-    @ApiResponse({status: 200, type: User})             //  <-- Respose status and returning type
-    @Post()
-    create(@Body() userDto: CreateUserDto) {
-        return this.usersService.createUser(userDto);
-    }
-
-    @ApiOperation({summary: 'User list'})
-    @ApiResponse({status: 200, type: [User]})
-    @UseGuards(JwtAuthGuard)
-    @Get()
-    getAll() {
-        return this.usersService.getAllUsers();
-    }
+  @ApiOperation({ summary: 'List all users' })
+  @ApiResponse({ status: 200, type: [User] })
+  @Get()
+  getAll() {
+    return this.usersService.getAllUsers();
+  }
 }
