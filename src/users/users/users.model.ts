@@ -16,20 +16,20 @@ export class User extends Model<User, UserCreationAttrs> {
 
   @ApiProperty({ example: '9001234567', description: 'Phone number' })
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
-  phone: string;
+  declare phone: string;
 
   @ApiProperty({ example: 'John Doe', description: 'Display name' })
   @Column({ type: DataType.STRING, allowNull: false })
-  name: string;
+  declare name: string;
 
   @Column({ type: DataType.STRING, allowNull: true })
-  email: string;
+  declare email: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  password: string;
+  declare password: string;
 
   @BelongsToMany(() => Role, () => UserRoles)
-  roles: Role[];
+  declare roles: Role[];
 
   toJSON() {
     const { password: _password, ...attributes } = this.get();

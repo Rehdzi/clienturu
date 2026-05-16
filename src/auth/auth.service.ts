@@ -43,12 +43,13 @@ export class AuthService {
 
   async validateUser(phone: string, password: string): Promise<User> {
     const user = await this.userService.getUserByPhone(phone);
+    const passwordHash = user?.get('password');
 
-    if (!user?.password) {
+    if (!user || !passwordHash) {
       throw new UnauthorizedException({ message: 'Incorrect credentials' });
     }
 
-    const passwordMatches = await bcrypt.compare(password, user.password);
+    const passwordMatches = await bcrypt.compare(password, passwordHash);
 
     if (!passwordMatches) {
       throw new UnauthorizedException({ message: 'Incorrect credentials' });
