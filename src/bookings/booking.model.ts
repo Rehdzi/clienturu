@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { User } from 'src/users/users/users.model';
 import { Organization } from 'src/organization/organization.model';
 import { Service } from 'src/services/service.model';
@@ -27,7 +34,10 @@ export class Booking extends Model<Booking, BookingCreationAttrs> {
   @ApiProperty({ example: 1, description: 'Booking ID' })
   declare id: number;
 
-  @ApiProperty({ example: 1, description: 'ID of the client (User) who made the booking' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the client (User) who made the booking',
+  })
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare clientId: number;
@@ -51,7 +61,10 @@ export class Booking extends Model<Booking, BookingCreationAttrs> {
   @BelongsTo(() => Service)
   declare service: Service;
 
-  @ApiProperty({ example: 1, description: 'ID of the master (User) who will perform the service' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the master (User) who will perform the service',
+  })
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare masterId: number;
@@ -59,11 +72,17 @@ export class Booking extends Model<Booking, BookingCreationAttrs> {
   @BelongsTo(() => User, 'masterId')
   declare master: User;
 
-  @ApiProperty({ example: '2026-05-24T09:00:00.000Z', description: 'Slot start (UTC)' })
+  @ApiProperty({
+    example: '2026-05-24T09:00:00.000Z',
+    description: 'Slot start (UTC)',
+  })
   @Column({ type: DataType.DATE, allowNull: false })
   declare startTime: Date;
 
-  @ApiProperty({ example: '2026-05-24T10:00:00.000Z', description: 'Slot end (UTC), derived from service duration' })
+  @ApiProperty({
+    example: '2026-05-24T10:00:00.000Z',
+    description: 'Slot end (UTC), derived from service duration',
+  })
   @Column({ type: DataType.DATE, allowNull: false })
   declare endTime: Date;
 
@@ -79,7 +98,11 @@ export class Booking extends Model<Booking, BookingCreationAttrs> {
   })
   declare status: BookingStatus;
 
-  @ApiProperty({ example: 'Please use the parking entrance', description: 'Optional client comment', required: false })
+  @ApiProperty({
+    example: 'Please use the parking entrance',
+    description: 'Optional client comment',
+    required: false,
+  })
   @Column({ type: DataType.STRING, allowNull: true })
   declare comment: string;
 }

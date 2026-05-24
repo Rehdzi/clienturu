@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { User } from 'src/users/users/users.model';
 import { Organization } from 'src/organization/organization.model';
 import { Booking } from 'src/bookings/booking.model';
@@ -28,7 +35,10 @@ export class Review extends Model<Review, ReviewCreationAttrs> {
   @BelongsTo(() => Organization)
   declare organization: Organization;
 
-  @ApiProperty({ example: 1, description: 'ID of the client (User) leaving the review' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the client (User) leaving the review',
+  })
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare clientId: number;
@@ -36,7 +46,11 @@ export class Review extends Model<Review, ReviewCreationAttrs> {
   @BelongsTo(() => User)
   declare client: User;
 
-  @ApiProperty({ example: 1, description: 'ID of the booking this review came from', required: false })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the booking this review came from',
+    required: false,
+  })
   @ForeignKey(() => Booking)
   @Column({ type: DataType.INTEGER, allowNull: true })
   declare bookingId: number;
@@ -48,7 +62,11 @@ export class Review extends Model<Review, ReviewCreationAttrs> {
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare rating: number;
 
-  @ApiProperty({ example: 'Great service!', description: 'Optional free-text comment', required: false })
+  @ApiProperty({
+    example: 'Great service!',
+    description: 'Optional free-text comment',
+    required: false,
+  })
   @Column({ type: DataType.STRING, allowNull: true })
   declare comment: string;
 }

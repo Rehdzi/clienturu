@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  BelongsToMany,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { Organization } from 'src/organization/organization.model';
 import { User } from 'src/users/users/users.model';
 import { StaffService } from 'src/staff/staff-service.model';
@@ -17,7 +25,10 @@ export class Service extends Model<Service, ServiceCreationAttrs> {
   @ApiProperty({ example: 1, description: 'Service ID' })
   declare id: number;
 
-  @ApiProperty({ example: 1, description: 'ID of the organization offering this service' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the organization offering this service',
+  })
   @ForeignKey(() => Organization)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare organizationId: number;
@@ -29,7 +40,11 @@ export class Service extends Model<Service, ServiceCreationAttrs> {
   @Column({ type: DataType.STRING, allowNull: false })
   declare name: string;
 
-  @ApiProperty({ example: 'Classic men haircut', description: 'Service description', required: false })
+  @ApiProperty({
+    example: 'Classic men haircut',
+    description: 'Service description',
+    required: false,
+  })
   @Column({ type: DataType.STRING, allowNull: true })
   declare description: string;
 
@@ -38,11 +53,17 @@ export class Service extends Model<Service, ServiceCreationAttrs> {
   declare price: number;
 
   // Positive integer count of minutes. Used later to generate bookable time slots.
-  @ApiProperty({ example: 30, description: 'Service duration in minutes (positive integer)' })
+  @ApiProperty({
+    example: 30,
+    description: 'Service duration in minutes (positive integer)',
+  })
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare durationMinutes: number;
 
-  @ApiProperty({ example: true, description: 'Whether the service is currently offered' })
+  @ApiProperty({
+    example: true,
+    description: 'Whether the service is currently offered',
+  })
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   declare isActive: boolean;
 

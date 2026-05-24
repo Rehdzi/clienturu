@@ -8,6 +8,6 @@ import { Organization } from './organization.model';
   controllers: [OrganizationController],
   providers: [OrganizationService],
   imports: [SequelizeModule.forFeature([Organization])],
-  exports: [OrganizationService]
+  exports: [OrganizationService],
 })
 export class OrganizationModule {}

@@ -9,13 +9,21 @@ import { BookingsService } from './bookings.service';
 
 describe('BookingsService', () => {
   let service: BookingsService;
-  let bookingRepository: { findAll: jest.Mock; create: jest.Mock; findByPk: jest.Mock };
+  let bookingRepository: {
+    findAll: jest.Mock;
+    create: jest.Mock;
+    findByPk: jest.Mock;
+  };
   let serviceRepository: { findByPk: jest.Mock };
   let scheduleRepository: { findOne: jest.Mock };
   let staffServiceRepository: { findOne: jest.Mock };
 
   beforeEach(async () => {
-    bookingRepository = { findAll: jest.fn(), create: jest.fn(), findByPk: jest.fn() };
+    bookingRepository = {
+      findAll: jest.fn(),
+      create: jest.fn(),
+      findByPk: jest.fn(),
+    };
     serviceRepository = { findByPk: jest.fn() };
     scheduleRepository = { findOne: jest.fn() };
     staffServiceRepository = { findOne: jest.fn() };
@@ -26,7 +34,10 @@ describe('BookingsService', () => {
         { provide: getModelToken(Booking), useValue: bookingRepository },
         { provide: getModelToken(Service), useValue: serviceRepository },
         { provide: getModelToken(Schedule), useValue: scheduleRepository },
-        { provide: getModelToken(StaffServiceModel), useValue: staffServiceRepository },
+        {
+          provide: getModelToken(StaffServiceModel),
+          useValue: staffServiceRepository,
+        },
       ],
     }).compile();
 
@@ -45,7 +56,12 @@ describe('BookingsService', () => {
       const workStart = BookingsService.combineDateTime(date, '09:00');
       const workEnd = BookingsService.combineDateTime(date, '12:00');
 
-      const slots = BookingsService.generateFreeSlots(workStart, workEnd, 60, []);
+      const slots = BookingsService.generateFreeSlots(
+        workStart,
+        workEnd,
+        60,
+        [],
+      );
 
       expect(slots.map((s) => s.toISOString())).toEqual([
         '2026-05-25T09:00:00.000Z',
@@ -65,7 +81,12 @@ describe('BookingsService', () => {
         },
       ];
 
-      const slots = BookingsService.generateFreeSlots(workStart, workEnd, 60, booked);
+      const slots = BookingsService.generateFreeSlots(
+        workStart,
+        workEnd,
+        60,
+        booked,
+      );
 
       expect(slots.map((s) => s.toISOString())).toEqual([
         '2026-05-25T09:00:00.000Z',
@@ -86,9 +107,19 @@ describe('BookingsService', () => {
 
   it('getAvailableSlots returns 09:00 and 11:00 when 10:00 is already booked', async () => {
     const date = '2026-05-25'; // a Monday -> dayOfWeek 1
-    serviceRepository.findByPk.mockResolvedValue({ id: 1, durationMinutes: 60, organizationId: 1 });
-    staffServiceRepository.findOne.mockResolvedValue({ userId: 1, serviceId: 1 });
-    scheduleRepository.findOne.mockResolvedValue({ startTime: '09:00', endTime: '12:00' });
+    serviceRepository.findByPk.mockResolvedValue({
+      id: 1,
+      durationMinutes: 60,
+      organizationId: 1,
+    });
+    staffServiceRepository.findOne.mockResolvedValue({
+      userId: 1,
+      serviceId: 1,
+    });
+    scheduleRepository.findOne.mockResolvedValue({
+      startTime: '09:00',
+      endTime: '12:00',
+    });
     bookingRepository.findAll.mockResolvedValue([
       {
         startTime: BookingsService.combineDateTime(date, '10:00'),
@@ -98,15 +129,25 @@ describe('BookingsService', () => {
 
     const slots = await service.getAvailableSlots(1, 1, date);
 
-    expect(slots).toEqual(['2026-05-25T09:00:00.000Z', '2026-05-25T11:00:00.000Z']);
+    expect(slots).toEqual([
+      '2026-05-25T09:00:00.000Z',
+      '2026-05-25T11:00:00.000Z',
+    ]);
   });
 
   // ---- Double-booking rejection on create ---------------------------------
 
   it('createBooking rejects an overlapping slot with a ConflictException', async () => {
     const start = new Date(Date.now() + 24 * 60 * 60 * 1000); // tomorrow, not in the past
-    serviceRepository.findByPk.mockResolvedValue({ id: 1, durationMinutes: 60, organizationId: 1 });
-    staffServiceRepository.findOne.mockResolvedValue({ userId: 1, serviceId: 1 });
+    serviceRepository.findByPk.mockResolvedValue({
+      id: 1,
+      durationMinutes: 60,
+      organizationId: 1,
+    });
+    staffServiceRepository.findOne.mockResolvedValue({
+      userId: 1,
+      serviceId: 1,
+    });
     bookingRepository.findAll.mockResolvedValue([
       {
         startTime: new Date(start.getTime()),
@@ -128,8 +169,15 @@ describe('BookingsService', () => {
 
   it('createBooking persists when the slot is free', async () => {
     const start = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    serviceRepository.findByPk.mockResolvedValue({ id: 1, durationMinutes: 60, organizationId: 1 });
-    staffServiceRepository.findOne.mockResolvedValue({ userId: 1, serviceId: 1 });
+    serviceRepository.findByPk.mockResolvedValue({
+      id: 1,
+      durationMinutes: 60,
+      organizationId: 1,
+    });
+    staffServiceRepository.findOne.mockResolvedValue({
+      userId: 1,
+      serviceId: 1,
+    });
     bookingRepository.findAll.mockResolvedValue([]);
     bookingRepository.create.mockResolvedValue({ id: 99 });
 
@@ -148,7 +196,11 @@ describe('BookingsService', () => {
 
   it('updateStatus allows pending -> confirmed', async () => {
     const update = jest.fn().mockResolvedValue({ id: 1, status: 'confirmed' });
-    bookingRepository.findByPk.mockResolvedValue({ id: 1, status: 'pending', update });
+    bookingRepository.findByPk.mockResolvedValue({
+      id: 1,
+      status: 'pending',
+      update,
+    });
 
     await service.updateStatus(1, 'confirmed');
 
@@ -157,17 +209,29 @@ describe('BookingsService', () => {
 
   it('updateStatus rejects an illegal transition (pending -> completed)', async () => {
     const update = jest.fn();
-    bookingRepository.findByPk.mockResolvedValue({ id: 1, status: 'pending', update });
+    bookingRepository.findByPk.mockResolvedValue({
+      id: 1,
+      status: 'pending',
+      update,
+    });
 
-    await expect(service.updateStatus(1, 'completed')).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.updateStatus(1, 'completed')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
     expect(update).not.toHaveBeenCalled();
   });
 
   it('updateStatus rejects transitions out of a terminal state (completed -> anything)', async () => {
     const update = jest.fn();
-    bookingRepository.findByPk.mockResolvedValue({ id: 1, status: 'completed', update });
+    bookingRepository.findByPk.mockResolvedValue({
+      id: 1,
+      status: 'completed',
+      update,
+    });
 
-    await expect(service.updateStatus(1, 'cancelled')).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.updateStatus(1, 'cancelled')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
     expect(update).not.toHaveBeenCalled();
   });
 });

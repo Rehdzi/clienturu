@@ -9,7 +9,8 @@ import { CreateReviewDto } from './dto/create-review.dto';
 export class ReviewsService {
   constructor(
     @InjectModel(Review) private reviewRepository: typeof Review,
-    @InjectModel(Organization) private organizationRepository: typeof Organization,
+    @InjectModel(Organization)
+    private organizationRepository: typeof Organization,
   ) {}
 
   async createReview(dto: CreateReviewDto): Promise<Review> {
@@ -52,7 +53,10 @@ export class ReviewsService {
     })) as unknown as { avgRating: string | null } | null;
 
     const avg = result?.avgRating;
-    const rating = avg === null || avg === undefined ? null : Math.round(Number(avg) * 10) / 10;
+    const rating =
+      avg === null || avg === undefined
+        ? null
+        : Math.round(Number(avg) * 10) / 10;
 
     // `rating` is declared `number` on the model but the column is nullable
     // ("no reviews" => null), so we cast to satisfy the update typing.

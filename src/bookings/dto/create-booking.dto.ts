@@ -2,7 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsISO8601, IsOptional, IsString } from 'class-validator';
 
 export class CreateBookingDto {
-  @ApiProperty({ example: 1, description: 'ID of the client (User) making the booking' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the client (User) making the booking',
+  })
   @IsInt()
   readonly clientId: number;
 
@@ -10,7 +13,10 @@ export class CreateBookingDto {
   @IsInt()
   readonly serviceId: number;
 
-  @ApiProperty({ example: 1, description: 'ID of the master (User) who will perform the service' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the master (User) who will perform the service',
+  })
   @IsInt()
   readonly masterId: number;
 
@@ -21,7 +27,11 @@ export class CreateBookingDto {
   @IsISO8601()
   readonly startTime: string;
 
-  @ApiProperty({ example: 'Please use the parking entrance', description: 'Optional client comment', required: false })
+  @ApiProperty({
+    example: 'Please use the parking entrance',
+    description: 'Optional client comment',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   readonly comment?: string;

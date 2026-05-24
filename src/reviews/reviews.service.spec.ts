@@ -43,7 +43,10 @@ describe('ReviewsService', () => {
       providers: [
         ReviewsService,
         { provide: getModelToken(Review), useValue: reviewRepository },
-        { provide: getModelToken(Organization), useValue: organizationRepository },
+        {
+          provide: getModelToken(Organization),
+          useValue: organizationRepository,
+        },
       ],
     }).compile();
 
@@ -55,10 +58,12 @@ describe('ReviewsService', () => {
   });
 
   it('recomputes org rating to 4.5 after reviews of 4 and 5 are created', async () => {
-    reviewRepository.create.mockImplementation((dto) => {
-      rows.push({ organizationId: dto.organizationId, rating: dto.rating });
-      return Promise.resolve({ id: rows.length, ...dto });
-    });
+    reviewRepository.create.mockImplementation(
+      (dto: { organizationId: number; rating: number }) => {
+        rows.push({ organizationId: dto.organizationId, rating: dto.rating });
+        return Promise.resolve({ id: rows.length, ...dto });
+      },
+    );
 
     await service.createReview({ organizationId: 1, clientId: 10, rating: 4 });
     await service.createReview({ organizationId: 1, clientId: 11, rating: 5 });
@@ -114,7 +119,9 @@ describe('ReviewsService', () => {
   it('throws NotFoundException when deleting a missing review', async () => {
     reviewRepository.findByPk.mockResolvedValue(null);
 
-    await expect(service.deleteReview(999)).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.deleteReview(999)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
     expect(organizationRepository.update).not.toHaveBeenCalled();
   });
 });

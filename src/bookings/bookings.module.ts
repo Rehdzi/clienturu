@@ -10,7 +10,9 @@ import { Booking } from './booking.model';
 @Module({
   controllers: [BookingsController],
   providers: [BookingsService],
-  imports: [SequelizeModule.forFeature([Booking, Service, Schedule, StaffServiceModel])],
+  imports: [
+    SequelizeModule.forFeature([Booking, Service, Schedule, StaffServiceModel]),
+  ],
   exports: [BookingsService],
 })
 export class BookingsModule {}

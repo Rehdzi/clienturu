@@ -16,7 +16,10 @@ export class AvailableSlotsQueryDto {
   @IsInt()
   readonly serviceId: number;
 
-  @ApiProperty({ example: '2026-05-24', description: 'Calendar date to list slots for, "YYYY-MM-DD"' })
+  @ApiProperty({
+    example: '2026-05-24',
+    description: 'Calendar date to list slots for, "YYYY-MM-DD"',
+  })
   @Matches(DATE_REGEX, { message: 'date must be in "YYYY-MM-DD" format' })
   readonly date: string;
 }

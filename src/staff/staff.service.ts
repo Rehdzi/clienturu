@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/users/users/users.model';
 import { Organization } from 'src/organization/organization.model';
@@ -16,20 +20,26 @@ export const STAFF_ROLE_VALUE = 'Staff';
 @Injectable()
 export class StaffService {
   constructor(
-    @InjectModel(OrganizationStaff) private organizationStaffRepository: typeof OrganizationStaff,
-    @InjectModel(StaffServiceModel) private staffServiceRepository: typeof StaffServiceModel,
+    @InjectModel(OrganizationStaff)
+    private organizationStaffRepository: typeof OrganizationStaff,
+    @InjectModel(StaffServiceModel)
+    private staffServiceRepository: typeof StaffServiceModel,
     @InjectModel(Schedule) private scheduleRepository: typeof Schedule,
     @InjectModel(User) private userRepository: typeof User,
-    @InjectModel(Organization) private organizationRepository: typeof Organization,
+    @InjectModel(Organization)
+    private organizationRepository: typeof Organization,
     @InjectModel(Service) private serviceRepository: typeof Service,
     private rolesService: RolesService,
   ) {}
 
   async assignStaff(organizationId: number, userId: number) {
     // TODO: guard — only the organization owner should be able to manage staff
-    const organization = await this.organizationRepository.findByPk(organizationId);
+    const organization =
+      await this.organizationRepository.findByPk(organizationId);
     if (!organization) {
-      throw new NotFoundException(`Organization with id ${organizationId} not found`);
+      throw new NotFoundException(
+        `Organization with id ${organizationId} not found`,
+      );
     }
 
     const user = await this.userRepository.findByPk(userId);
@@ -66,9 +76,12 @@ export class StaffService {
   }
 
   async getOrganizationStaff(organizationId: number) {
-    const organization = await this.organizationRepository.findByPk(organizationId);
+    const organization =
+      await this.organizationRepository.findByPk(organizationId);
     if (!organization) {
-      throw new NotFoundException(`Organization with id ${organizationId} not found`);
+      throw new NotFoundException(
+        `Organization with id ${organizationId} not found`,
+      );
     }
     return organization.$get('staff');
   }
@@ -106,14 +119,18 @@ export class StaffService {
       where: { userId },
     });
     if (!membership) {
-      throw new BadRequestException(`User ${userId} is not assigned as staff to any organization`);
+      throw new BadRequestException(
+        `User ${userId} is not assigned as staff to any organization`,
+      );
     }
 
     // Validate one row per (master, dayOfWeek) and that endTime is after startTime.
     const seenDays = new Set<number>();
     for (const entry of dto.entries) {
       if (seenDays.has(entry.dayOfWeek)) {
-        throw new BadRequestException(`Duplicate schedule entry for dayOfWeek ${entry.dayOfWeek}`);
+        throw new BadRequestException(
+          `Duplicate schedule entry for dayOfWeek ${entry.dayOfWeek}`,
+        );
       }
       seenDays.add(entry.dayOfWeek);
       if (entry.endTime <= entry.startTime) {

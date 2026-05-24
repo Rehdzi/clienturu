@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Service } from 'src/services/service.model';
@@ -21,7 +26,8 @@ export class BookingsService {
     @InjectModel(Booking) private bookingRepository: typeof Booking,
     @InjectModel(Service) private serviceRepository: typeof Service,
     @InjectModel(Schedule) private scheduleRepository: typeof Schedule,
-    @InjectModel(StaffServiceModel) private staffServiceRepository: typeof StaffServiceModel,
+    @InjectModel(StaffServiceModel)
+    private staffServiceRepository: typeof StaffServiceModel,
   ) {}
 
   // ---- Pure helpers (no DB access) ----------------------------------------
@@ -30,7 +36,9 @@ export class BookingsService {
   // one starts strictly before the other ends. Touching edges (aEnd === bStart)
   // do NOT overlap, so a 10:00 booking is free immediately after a 09:00-10:00 one.
   static overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
-    return aStart.getTime() < bEnd.getTime() && bStart.getTime() < aEnd.getTime();
+    return (
+      aStart.getTime() < bEnd.getTime() && bStart.getTime() < aEnd.getTime()
+    );
   }
 
   // Build a UTC Date from a "YYYY-MM-DD" calendar date and an "HH:mm" wall-clock
@@ -80,19 +88,28 @@ export class BookingsService {
     return service;
   }
 
-  private async assertMasterProvidesService(masterId: number, serviceId: number): Promise<void> {
+  private async assertMasterProvidesService(
+    masterId: number,
+    serviceId: number,
+  ): Promise<void> {
     const link = await this.staffServiceRepository.findOne({
       where: { userId: masterId, serviceId },
     });
     if (!link) {
-      throw new BadRequestException(`Master ${masterId} does not provide service ${serviceId}`);
+      throw new BadRequestException(
+        `Master ${masterId} does not provide service ${serviceId}`,
+      );
     }
   }
 
   // Existing bookings for a master that could collide within [from, to), i.e. any
   // non-cancelled booking whose interval overlaps the window. Shared by both the
   // availability listing and create-booking validation so they can never disagree.
-  private async getActiveBookingsInWindow(masterId: number, from: Date, to: Date) {
+  private async getActiveBookingsInWindow(
+    masterId: number,
+    from: Date,
+    to: Date,
+  ) {
     return this.bookingRepository.findAll({
       where: {
         masterId,
@@ -103,12 +120,19 @@ export class BookingsService {
     });
   }
 
-  async getAvailableSlots(masterId: number, serviceId: number, date: string): Promise<string[]> {
+  async getAvailableSlots(
+    masterId: number,
+    serviceId: number,
+    date: string,
+  ): Promise<string[]> {
     const service = await this.getServiceOrThrow(serviceId);
     await this.assertMasterProvidesService(masterId, serviceId);
 
     // dayOfWeek 0 (Sunday) .. 6 (Saturday), matching the Schedule model.
-    const dayOfWeek = BookingsService.combineDateTime(date, '00:00').getUTCDay();
+    const dayOfWeek = BookingsService.combineDateTime(
+      date,
+      '00:00',
+    ).getUTCDay();
 
     const schedule = await this.scheduleRepository.findOne({
       where: { userId: masterId, dayOfWeek },
@@ -121,7 +145,11 @@ export class BookingsService {
     const workStart = BookingsService.combineDateTime(date, schedule.startTime);
     const workEnd = BookingsService.combineDateTime(date, schedule.endTime);
 
-    const existing = await this.getActiveBookingsInWindow(masterId, workStart, workEnd);
+    const existing = await this.getActiveBookingsInWindow(
+      masterId,
+      workStart,
+      workEnd,
+    );
 
     const slots = BookingsService.generateFreeSlots(
       workStart,
@@ -139,7 +167,9 @@ export class BookingsService {
     await this.assertMasterProvidesService(dto.masterId, dto.serviceId);
 
     const startTime = new Date(dto.startTime);
-    const endTime = new Date(startTime.getTime() + service.durationMinutes * 60_000);
+    const endTime = new Date(
+      startTime.getTime() + service.durationMinutes * 60_000,
+    );
 
     // Reject bookings in the past.
     if (startTime.getTime() <= Date.now()) {
@@ -148,7 +178,11 @@ export class BookingsService {
 
     // Re-run the overlap check server-side; never trust the client's claim that a
     // slot is free. Uses the same window query as availability listing.
-    const existing = await this.getActiveBookingsInWindow(dto.masterId, startTime, endTime);
+    const existing = await this.getActiveBookingsInWindow(
+      dto.masterId,
+      startTime,
+      endTime,
+    );
     const conflict = existing.some((b) =>
       BookingsService.overlaps(startTime, endTime, b.startTime, b.endTime),
     );

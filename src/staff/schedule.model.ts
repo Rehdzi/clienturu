@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { User } from 'src/users/users/users.model';
 import { Organization } from 'src/organization/organization.model';
 
@@ -19,7 +26,10 @@ export class Schedule extends Model<Schedule, ScheduleCreationAttrs> {
   @ApiProperty({ example: 1, description: 'Schedule ID' })
   declare id: number;
 
-  @ApiProperty({ example: 1, description: 'ID of the master (User) this schedule belongs to' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the master (User) this schedule belongs to',
+  })
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare userId: number;
@@ -27,7 +37,10 @@ export class Schedule extends Model<Schedule, ScheduleCreationAttrs> {
   @BelongsTo(() => User)
   declare user: User;
 
-  @ApiProperty({ example: 1, description: 'ID of the organization the master works at' })
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the organization the master works at',
+  })
   @ForeignKey(() => Organization)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare organizationId: number;
@@ -35,15 +48,24 @@ export class Schedule extends Model<Schedule, ScheduleCreationAttrs> {
   @BelongsTo(() => Organization)
   declare organization: Organization;
 
-  @ApiProperty({ example: 1, description: 'Day of week, 0 (Sunday) to 6 (Saturday)' })
+  @ApiProperty({
+    example: 1,
+    description: 'Day of week, 0 (Sunday) to 6 (Saturday)',
+  })
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare dayOfWeek: number;
 
-  @ApiProperty({ example: '09:00', description: 'Start of working hours, "HH:mm"' })
+  @ApiProperty({
+    example: '09:00',
+    description: 'Start of working hours, "HH:mm"',
+  })
   @Column({ type: DataType.STRING, allowNull: false })
   declare startTime: string;
 
-  @ApiProperty({ example: '18:00', description: 'End of working hours, "HH:mm"' })
+  @ApiProperty({
+    example: '18:00',
+    description: 'End of working hours, "HH:mm"',
+  })
   @Column({ type: DataType.STRING, allowNull: false })
   declare endTime: string;
 }

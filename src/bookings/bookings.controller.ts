@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
@@ -12,7 +20,11 @@ export class BookingsController {
   // GET /bookings/available?masterId=&serviceId=&date=YYYY-MM-DD
   @Get('available')
   async getAvailableSlots(@Query() query: AvailableSlotsQueryDto) {
-    return this.bookingsService.getAvailableSlots(query.masterId, query.serviceId, query.date);
+    return this.bookingsService.getAvailableSlots(
+      query.masterId,
+      query.serviceId,
+      query.date,
+    );
   }
 
   // Create a booking for a slot. The slot is re-validated server-side.
@@ -43,7 +55,10 @@ export class BookingsController {
 
   // Transition a booking's status, enforcing the lifecycle.
   @Patch(':id/status')
-  async updateStatus(@Param('id') id: number, @Body() dto: UpdateBookingStatusDto) {
+  async updateStatus(
+    @Param('id') id: number,
+    @Body() dto: UpdateBookingStatusDto,
+  ) {
     return this.bookingsService.updateStatus(id, dto.status);
   }
 }

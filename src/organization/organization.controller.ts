@@ -4,21 +4,20 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 
 @Controller('organization')
 export class OrganizationController {
-    constructor(private organizationService: OrganizationService) {}
+  constructor(private organizationService: OrganizationService) {}
 
-    @Get('all')
-    async getAllOrganizations() {
-        return this.organizationService.getAllOrganizations();
-    }
+  @Get('all')
+  async getAllOrganizations() {
+    return this.organizationService.getAllOrganizations();
+  }
 
-    @Get(':id')
-    async getOrganizationById(@Param('id') id: number) {
-        return this.organizationService.getOrganizationById(id);
-    }
+  @Get(':id')
+  async getOrganizationById(@Param('id') id: number) {
+    return this.organizationService.getOrganizationById(id);
+  }
 
-    @Post('new')
-    async createOrganization(@Body() dto: CreateOrganizationDto) {
-        return this.organizationService.createOrganization(dto);
-    }
-
+  @Post('new')
+  async createOrganization(@Body() dto: CreateOrganizationDto) {
+    return this.organizationService.createOrganization(dto);
+  }
 }

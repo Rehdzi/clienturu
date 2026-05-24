@@ -28,13 +28,19 @@ export class StaffController {
 
   // Set the full set of services a master provides.
   @Post('staff/:userId/services')
-  async setStaffServices(@Param('userId') userId: number, @Body() dto: SetStaffServicesDto) {
+  async setStaffServices(
+    @Param('userId') userId: number,
+    @Body() dto: SetStaffServicesDto,
+  ) {
     return this.staffService.setStaffServices(userId, dto);
   }
 
   // Create/replace a master's weekly working hours.
   @Post('staff/:userId/schedule')
-  async setSchedule(@Param('userId') userId: number, @Body() dto: SetScheduleDto) {
+  async setSchedule(
+    @Param('userId') userId: number,
+    @Body() dto: SetScheduleDto,
+  ) {
     return this.staffService.setSchedule(userId, dto);
   }
 
