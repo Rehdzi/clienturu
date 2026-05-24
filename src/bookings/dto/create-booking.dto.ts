@@ -2,12 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsISO8601, IsOptional, IsString } from 'class-validator';
 
 export class CreateBookingDto {
-  @ApiProperty({
-    example: 1,
-    description: 'ID of the client (User) making the booking',
-  })
-  @IsInt()
-  readonly clientId: number;
+  // The client is derived from the authenticated token, not the request body,
+  // so one user cannot create bookings on another user's behalf.
 
   @ApiProperty({ example: 1, description: 'ID of the service being booked' })
   @IsInt()

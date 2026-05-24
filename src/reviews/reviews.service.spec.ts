@@ -1,9 +1,19 @@
 import { NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AccessTokenPayload } from '../auth/interfaces/jwt-payload.interface';
 import { Organization } from '../organization/organization.model';
 import { Review } from './review.model';
 import { ReviewsService } from './reviews.service';
+
+// Admin actor bypasses the author/identity checks so these tests can focus on
+// the rating-recompute behaviour.
+const actor: AccessTokenPayload = {
+  sub: 10,
+  phone: '0000000000',
+  roles: ['Admin'],
+  type: 'access',
+};
 
 describe('ReviewsService', () => {
   let service: ReviewsService;
@@ -65,8 +75,8 @@ describe('ReviewsService', () => {
       },
     );
 
-    await service.createReview({ organizationId: 1, clientId: 10, rating: 4 });
-    await service.createReview({ organizationId: 1, clientId: 11, rating: 5 });
+    await service.createReview({ organizationId: 1, rating: 4 }, actor);
+    await service.createReview({ organizationId: 1, rating: 5 }, actor);
 
     expect(organizationRepository.update).toHaveBeenLastCalledWith(
       { rating: 4.5 },
@@ -89,7 +99,7 @@ describe('ReviewsService', () => {
       }),
     });
 
-    await service.deleteReview(1);
+    await service.deleteReview(1, actor);
 
     expect(organizationRepository.update).toHaveBeenLastCalledWith(
       { rating: 5 },
@@ -108,7 +118,7 @@ describe('ReviewsService', () => {
       }),
     });
 
-    await service.deleteReview(1);
+    await service.deleteReview(1, actor);
 
     expect(organizationRepository.update).toHaveBeenLastCalledWith(
       { rating: null },
@@ -119,7 +129,7 @@ describe('ReviewsService', () => {
   it('throws NotFoundException when deleting a missing review', async () => {
     reviewRepository.findByPk.mockResolvedValue(null);
 
-    await expect(service.deleteReview(999)).rejects.toBeInstanceOf(
+    await expect(service.deleteReview(999, actor)).rejects.toBeInstanceOf(
       NotFoundException,
     );
     expect(organizationRepository.update).not.toHaveBeenCalled();

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,6 +10,8 @@ import { Op } from 'sequelize';
 import { Service } from 'src/services/service.model';
 import { Schedule } from 'src/staff/schedule.model';
 import { StaffService as StaffServiceModel } from 'src/staff/staff-service.model';
+import { AccessTokenPayload } from 'src/auth/interfaces/jwt-payload.interface';
+import { isAdmin } from 'src/roles/roles.constants';
 import { Booking, BookingStatus } from './booking.model';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
@@ -161,8 +164,13 @@ export class BookingsService {
     return slots.map((s) => s.toISOString());
   }
 
-  async createBooking(dto: CreateBookingDto): Promise<Booking> {
-    // TODO: guard — the authenticated user should match dto.clientId
+  async createBooking(
+    dto: CreateBookingDto,
+    user: AccessTokenPayload,
+  ): Promise<Booking> {
+    // The client is always the authenticated user — never trust a body-supplied
+    // id, which would let one user book on another's behalf.
+    const clientId = user.sub;
     const service = await this.getServiceOrThrow(dto.serviceId);
     await this.assertMasterProvidesService(dto.masterId, dto.serviceId);
 
@@ -191,7 +199,7 @@ export class BookingsService {
     }
 
     return this.bookingRepository.create({
-      clientId: dto.clientId,
+      clientId,
       organizationId: service.organizationId,
       serviceId: dto.serviceId,
       masterId: dto.masterId,
@@ -201,33 +209,66 @@ export class BookingsService {
     });
   }
 
-  async getBookingById(id: number): Promise<Booking> {
+  // A booking is "owned" by its client and its master; either party (or an
+  // Admin) may view or act on it.
+  private assertParticipant(booking: Booking, user: AccessTokenPayload): void {
+    if (
+      !isAdmin(user.roles) &&
+      booking.clientId !== user.sub &&
+      booking.masterId !== user.sub
+    ) {
+      throw new ForbiddenException('You are not a participant in this booking');
+    }
+  }
+
+  async getBookingById(id: number, user: AccessTokenPayload): Promise<Booking> {
     const booking = await this.bookingRepository.findByPk(id);
     if (!booking) {
       throw new NotFoundException(`Booking with id ${id} not found`);
     }
+    this.assertParticipant(booking, user);
     return booking;
   }
 
-  async getBookingsByClient(clientId: number): Promise<Booking[]> {
-    // TODO: guard — only the client themselves (or org owner) should list these
+  async getBookingsByClient(
+    clientId: number,
+    user: AccessTokenPayload,
+  ): Promise<Booking[]> {
+    // Only the client themselves (or an Admin) may list a client's bookings.
+    if (!isAdmin(user.roles) && clientId !== user.sub) {
+      throw new ForbiddenException("You cannot list another client's bookings");
+    }
     return this.bookingRepository.findAll({
       where: { clientId },
       order: [['startTime', 'ASC']],
     });
   }
 
-  async getBookingsByMaster(masterId: number): Promise<Booking[]> {
-    // TODO: guard — only the master themselves (or org owner) should list these
+  async getBookingsByMaster(
+    masterId: number,
+    user: AccessTokenPayload,
+  ): Promise<Booking[]> {
+    // Only the master themselves (or an Admin) may list a master's bookings.
+    if (!isAdmin(user.roles) && masterId !== user.sub) {
+      throw new ForbiddenException("You cannot list another master's bookings");
+    }
     return this.bookingRepository.findAll({
       where: { masterId },
       order: [['startTime', 'ASC']],
     });
   }
 
-  async updateStatus(id: number, status: BookingStatus): Promise<Booking> {
-    // TODO: guard — only the org owner/master/client (per transition) should do this
-    const booking = await this.getBookingById(id);
+  async updateStatus(
+    id: number,
+    status: BookingStatus,
+    user: AccessTokenPayload,
+  ): Promise<Booking> {
+    const booking = await this.bookingRepository.findByPk(id);
+    if (!booking) {
+      throw new NotFoundException(`Booking with id ${id} not found`);
+    }
+    // Only a participant (client or master) or an Admin may change the status.
+    this.assertParticipant(booking, user);
 
     if (booking.status === status) {
       throw new BadRequestException(`Booking is already '${status}'`);

@@ -9,6 +9,7 @@ import { User } from 'src/users/users/users.model';
 import { Organization } from 'src/organization/organization.model';
 import { Service } from 'src/services/service.model';
 import { RolesModule } from 'src/roles/roles.module';
+import { OrganizationModule } from 'src/organization/organization.module';
 
 @Module({
   controllers: [StaffController],
@@ -23,6 +24,7 @@ import { RolesModule } from 'src/roles/roles.module';
       Service,
     ]),
     RolesModule,
+    OrganizationModule,
   ],
   exports: [StaffService],
 })

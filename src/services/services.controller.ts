@@ -7,7 +7,12 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import type { AccessTokenPayload } from 'src/auth/interfaces/jwt-payload.interface';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -16,9 +21,14 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 export class ServicesController {
   constructor(private servicesService: ServicesService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('services')
-  async createService(@Body() dto: CreateServiceDto) {
-    return this.servicesService.createService(dto);
+  async createService(
+    @Body() dto: CreateServiceDto,
+    @CurrentUser() user: AccessTokenPayload,
+  ) {
+    return this.servicesService.createService(dto, user);
   }
 
   // List services for a given organization, e.g. GET /organization/1/services
@@ -38,13 +48,24 @@ export class ServicesController {
     return this.servicesService.getServiceById(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Patch('services/:id')
-  async updateService(@Param('id') id: number, @Body() dto: UpdateServiceDto) {
-    return this.servicesService.updateService(id, dto);
+  async updateService(
+    @Param('id') id: number,
+    @Body() dto: UpdateServiceDto,
+    @CurrentUser() user: AccessTokenPayload,
+  ) {
+    return this.servicesService.updateService(id, dto, user);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Delete('services/:id')
-  async deleteService(@Param('id') id: number) {
-    return this.servicesService.deleteService(id);
+  async deleteService(
+    @Param('id') id: number,
+    @CurrentUser() user: AccessTokenPayload,
+  ) {
+    return this.servicesService.deleteService(id, user);
   }
 }

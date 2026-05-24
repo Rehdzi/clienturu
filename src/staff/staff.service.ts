@@ -6,8 +6,10 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/users/users/users.model';
 import { Organization } from 'src/organization/organization.model';
+import { OrganizationService } from 'src/organization/organization.service';
 import { Service } from 'src/services/service.model';
 import { RolesService } from 'src/roles/roles.service';
+import { AccessTokenPayload } from 'src/auth/interfaces/jwt-payload.interface';
 import { OrganizationStaff } from './organization-staff.model';
 import { StaffService as StaffServiceModel } from './staff-service.model';
 import { Schedule } from './schedule.model';
@@ -15,7 +17,8 @@ import { SetStaffServicesDto } from './dto/set-staff-services.dto';
 import { SetScheduleDto } from './dto/set-schedule.dto';
 
 // Value of the role assigned to any user who acts as a master/staff member.
-export const STAFF_ROLE_VALUE = 'Staff';
+export { STAFF_ROLE_VALUE } from 'src/roles/roles.constants';
+import { STAFF_ROLE_VALUE } from 'src/roles/roles.constants';
 
 @Injectable()
 export class StaffService {
@@ -30,17 +33,19 @@ export class StaffService {
     private organizationRepository: typeof Organization,
     @InjectModel(Service) private serviceRepository: typeof Service,
     private rolesService: RolesService,
+    private organizationService: OrganizationService,
   ) {}
 
-  async assignStaff(organizationId: number, userId: number) {
-    // TODO: guard — only the organization owner should be able to manage staff
-    const organization =
-      await this.organizationRepository.findByPk(organizationId);
-    if (!organization) {
-      throw new NotFoundException(
-        `Organization with id ${organizationId} not found`,
-      );
-    }
+  async assignStaff(
+    organizationId: number,
+    userId: number,
+    actor: AccessTokenPayload,
+  ) {
+    // Only the organization owner (or an Admin) may manage its staff.
+    const organization = await this.organizationService.assertCanManage(
+      organizationId,
+      actor,
+    );
 
     const user = await this.userRepository.findByPk(userId);
     if (!user) {
@@ -62,8 +67,12 @@ export class StaffService {
     return organization.$get('staff');
   }
 
-  async removeStaff(organizationId: number, userId: number) {
-    // TODO: guard — only the organization owner should be able to manage staff
+  async removeStaff(
+    organizationId: number,
+    userId: number,
+    actor: AccessTokenPayload,
+  ) {
+    await this.organizationService.assertCanManage(organizationId, actor);
     const removed = await this.organizationStaffRepository.destroy({
       where: { organizationId, userId },
     });
@@ -86,12 +95,30 @@ export class StaffService {
     return organization.$get('staff');
   }
 
-  async setStaffServices(userId: number, dto: SetStaffServicesDto) {
-    // TODO: guard — only the organization owner should be able to manage staff services
+  async setStaffServices(
+    userId: number,
+    dto: SetStaffServicesDto,
+    actor: AccessTokenPayload,
+  ) {
     const user = await this.userRepository.findByPk(userId);
     if (!user) {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
+
+    // The master must belong to an organization; only that org's owner (or an
+    // Admin) may change which services the master provides.
+    const membership = await this.organizationStaffRepository.findOne({
+      where: { userId },
+    });
+    if (!membership) {
+      throw new BadRequestException(
+        `User ${userId} is not assigned as staff to any organization`,
+      );
+    }
+    await this.organizationService.assertCanManage(
+      membership.organizationId,
+      actor,
+    );
 
     if (dto.serviceIds.length > 0) {
       const services = await this.serviceRepository.findAll({
@@ -107,8 +134,11 @@ export class StaffService {
     return user.$get('providedServices');
   }
 
-  async setSchedule(userId: number, dto: SetScheduleDto) {
-    // TODO: guard — only the organization owner should be able to manage schedules
+  async setSchedule(
+    userId: number,
+    dto: SetScheduleDto,
+    actor: AccessTokenPayload,
+  ) {
     const user = await this.userRepository.findByPk(userId);
     if (!user) {
       throw new NotFoundException(`User with id ${userId} not found`);
@@ -123,6 +153,12 @@ export class StaffService {
         `User ${userId} is not assigned as staff to any organization`,
       );
     }
+
+    // Only that organization's owner (or an Admin) may set the master's schedule.
+    await this.organizationService.assertCanManage(
+      membership.organizationId,
+      actor,
+    );
 
     // Validate one row per (master, dayOfWeek) and that endTime is after startTime.
     const seenDays = new Set<number>();

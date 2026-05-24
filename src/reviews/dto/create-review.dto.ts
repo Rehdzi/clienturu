@@ -9,12 +9,7 @@ export class CreateReviewDto {
   @IsInt()
   readonly organizationId: number;
 
-  @ApiProperty({
-    example: 1,
-    description: 'ID of the client (User) leaving the review',
-  })
-  @IsInt()
-  readonly clientId: number;
+  // The review author (clientId) is derived from the authenticated token.
 
   @ApiProperty({
     example: 1,

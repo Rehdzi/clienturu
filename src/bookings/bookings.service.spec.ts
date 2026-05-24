@@ -1,11 +1,21 @@
 import { ConflictException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AccessTokenPayload } from '../auth/interfaces/jwt-payload.interface';
 import { Service } from '../services/service.model';
 import { Schedule } from '../staff/schedule.model';
 import { StaffService as StaffServiceModel } from '../staff/staff-service.model';
 import { Booking } from './booking.model';
 import { BookingsService } from './bookings.service';
+
+// An Admin actor bypasses the participant/identity checks so these tests can
+// focus on the booking logic itself (slot validation, status lifecycle).
+const actor: AccessTokenPayload = {
+  sub: 5,
+  phone: '0000000000',
+  roles: ['Admin'],
+  type: 'access',
+};
 
 describe('BookingsService', () => {
   let service: BookingsService;
@@ -156,12 +166,14 @@ describe('BookingsService', () => {
     ]);
 
     await expect(
-      service.createBooking({
-        clientId: 5,
-        serviceId: 1,
-        masterId: 1,
-        startTime: start.toISOString(),
-      }),
+      service.createBooking(
+        {
+          serviceId: 1,
+          masterId: 1,
+          startTime: start.toISOString(),
+        },
+        actor,
+      ),
     ).rejects.toBeInstanceOf(ConflictException);
 
     expect(bookingRepository.create).not.toHaveBeenCalled();
@@ -181,12 +193,14 @@ describe('BookingsService', () => {
     bookingRepository.findAll.mockResolvedValue([]);
     bookingRepository.create.mockResolvedValue({ id: 99 });
 
-    const result = await service.createBooking({
-      clientId: 5,
-      serviceId: 1,
-      masterId: 1,
-      startTime: start.toISOString(),
-    });
+    const result = await service.createBooking(
+      {
+        serviceId: 1,
+        masterId: 1,
+        startTime: start.toISOString(),
+      },
+      actor,
+    );
 
     expect(result).toEqual({ id: 99 });
     expect(bookingRepository.create).toHaveBeenCalledTimes(1);
@@ -202,7 +216,7 @@ describe('BookingsService', () => {
       update,
     });
 
-    await service.updateStatus(1, 'confirmed');
+    await service.updateStatus(1, 'confirmed', actor);
 
     expect(update).toHaveBeenCalledWith({ status: 'confirmed' });
   });
@@ -215,9 +229,9 @@ describe('BookingsService', () => {
       update,
     });
 
-    await expect(service.updateStatus(1, 'completed')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(
+      service.updateStatus(1, 'completed', actor),
+    ).rejects.toBeInstanceOf(ConflictException);
     expect(update).not.toHaveBeenCalled();
   });
 
@@ -229,9 +243,9 @@ describe('BookingsService', () => {
       update,
     });
 
-    await expect(service.updateStatus(1, 'cancelled')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(
+      service.updateStatus(1, 'cancelled', actor),
+    ).rejects.toBeInstanceOf(ConflictException);
     expect(update).not.toHaveBeenCalled();
   });
 });

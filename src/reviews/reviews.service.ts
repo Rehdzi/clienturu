@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { fn, col } from 'sequelize';
 import { Organization } from 'src/organization/organization.model';
+import { AccessTokenPayload } from 'src/auth/interfaces/jwt-payload.interface';
+import { isAdmin } from 'src/roles/roles.constants';
 import { Review } from './review.model';
 import { CreateReviewDto } from './dto/create-review.dto';
 
@@ -13,10 +19,17 @@ export class ReviewsService {
     private organizationRepository: typeof Organization,
   ) {}
 
-  async createReview(dto: CreateReviewDto): Promise<Review> {
-    // TODO: guard — only a client with a 'completed' booking at this org should
-    // be allowed to review it (rule deliberately not hard-blocked yet).
-    const review = await this.reviewRepository.create(dto);
+  async createReview(
+    dto: CreateReviewDto,
+    user: AccessTokenPayload,
+  ): Promise<Review> {
+    // The review author is the authenticated user, not a body-supplied id.
+    // (A stricter rule — "only a client with a 'completed' booking here may
+    // review" — could be layered on later; it is deliberately not enforced yet.)
+    const review = await this.reviewRepository.create({
+      ...dto,
+      clientId: user.sub,
+    });
     await this.recomputeRating(dto.organizationId);
     return review;
   }
@@ -28,11 +41,14 @@ export class ReviewsService {
     });
   }
 
-  async deleteReview(id: number): Promise<void> {
-    // TODO: guard — only the review's author (or org owner/admin) should delete it.
+  async deleteReview(id: number, user: AccessTokenPayload): Promise<void> {
     const review = await this.reviewRepository.findByPk(id);
     if (!review) {
       throw new NotFoundException(`Review with id ${id} not found`);
+    }
+    // Only the review's author (or an Admin) may delete it.
+    if (!isAdmin(user.roles) && review.clientId !== user.sub) {
+      throw new ForbiddenException('You can only delete your own reviews');
     }
     const { organizationId } = review;
     await review.destroy();
