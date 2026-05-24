@@ -19,4 +19,14 @@ export class RolesService {
         const role = await this.roleRepository.findOne({where: {value}});
         return role;
     }
+
+    // Ensures a role with the given value exists, creating it if missing.
+    // Reuses the roles table so staff/master roles share the same mechanism.
+    async getOrCreateRole(value: string, description: string){
+        const [role] = await this.roleRepository.findOrCreate({
+            where: { value },
+            defaults: { value, description },
+        });
+        return role;
+    }
 }

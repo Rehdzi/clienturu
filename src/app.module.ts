@@ -11,6 +11,16 @@ import { User } from './users/users/users.model';
 import { UsersModule } from './users/users/users.module';
 import { OrganizationModule } from './organization/organization.module';
 import { Organization } from './organization/organization.model';
+import { ServicesModule } from './services/services.module';
+import { Service } from './services/service.model';
+import { StaffModule } from './staff/staff.module';
+import { OrganizationStaff } from './staff/organization-staff.model';
+import { StaffService } from './staff/staff-service.model';
+import { Schedule } from './staff/schedule.model';
+import { BookingsModule } from './bookings/bookings.module';
+import { Booking } from './bookings/booking.model';
+import { ReviewsModule } from './reviews/reviews.module';
+import { Review } from './reviews/review.model';
 
 @Module({
   controllers: [],
@@ -38,13 +48,17 @@ import { Organization } from './organization/organization.model';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [User, Role, UserRoles, Organization],
+      models: [User, Role, UserRoles, Organization, Service, OrganizationStaff, StaffService, Schedule, Booking, Review],
       autoLoadModels: true,
     }),
     UsersModule,
     RolesModule,
     AuthModule,
     OrganizationModule,
+    ServicesModule,
+    StaffModule,
+    BookingsModule,
+    ReviewsModule,
   ],
 })
 export class AppModule {}
