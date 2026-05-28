@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateOrganizationDto {
   @ApiProperty({ example: 'John Doe corp.', description: 'Organization name' })
@@ -18,13 +18,4 @@ export class CreateOrganizationDto {
   @ApiProperty({ example: '+1234567890', description: 'Organization phone' })
   @IsString()
   readonly phone: string;
-
-  @ApiProperty({
-    example: 1,
-    description: 'ID of the user who owns this organization',
-    required: false,
-  })
-  @IsOptional()
-  @IsInt()
-  readonly ownerId?: number;
 }

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Role } from 'src/roles/roles.model';
 import { RolesService } from 'src/roles/roles.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './users.model';
@@ -36,13 +37,13 @@ export class UsersService {
   async getUserByPhone(phone: string) {
     return this.userRepository.findOne({
       where: { phone },
-      include: { all: true },
+      include: [Role],
     });
   }
 
   async getUserById(id: number) {
     return this.userRepository.findByPk(id, {
-      include: { all: true },
+      include: [Role],
     });
   }
 }

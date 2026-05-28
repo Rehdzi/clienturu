@@ -38,9 +38,8 @@ export class OrganizationService {
     return organization;
   }
 
-  async createOrganization(dto: CreateOrganizationDto) {
-    const organization = await this.organizationRepository.create(dto);
-    return organization;
+  async createOrganization(dto: CreateOrganizationDto, user: AccessTokenPayload) {
+    return this.organizationRepository.create({ ...dto, ownerId: user.sub });
   }
 
   async getAllOrganizations() {

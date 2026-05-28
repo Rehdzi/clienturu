@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import type { AccessTokenPayload } from 'src/auth/interfaces/jwt-payload.interface';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 
@@ -16,8 +27,13 @@ export class OrganizationController {
     return this.organizationService.getOrganizationById(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('new')
-  async createOrganization(@Body() dto: CreateOrganizationDto) {
-    return this.organizationService.createOrganization(dto);
+  async createOrganization(
+    @Body() dto: CreateOrganizationDto,
+    @CurrentUser() user: AccessTokenPayload,
+  ) {
+    return this.organizationService.createOrganization(dto, user);
   }
 }
