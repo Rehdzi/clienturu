@@ -1,6 +1,12 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
@@ -47,7 +53,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Validate current access token' })
   @UseGuards(JwtAuthGuard)
   @Post('me')
-  me(@Req() req: Request & { user: { sub: number; phone: string; roles: string[] } }) {
+  me(
+    @Req()
+    req: Request & { user: { sub: number; phone: string; roles: string[] } },
+  ) {
     return req.user;
   }
 }

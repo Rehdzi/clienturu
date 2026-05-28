@@ -1,7 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BelongsToMany, Column, DataType, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsToMany,
+  Column,
+  DataType,
+  HasMany,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { Role } from 'src/roles/roles.model';
 import { UserRoles } from 'src/roles/user-roles-model';
+import { Organization } from 'src/organization/organization.model';
+import { Service } from 'src/services/service.model';
+import { OrganizationStaff } from 'src/staff/organization-staff.model';
+import { StaffService } from 'src/staff/staff-service.model';
 
 interface UserCreationAttrs {
   phone: string;
@@ -30,6 +41,17 @@ export class User extends Model<User, UserCreationAttrs> {
 
   @BelongsToMany(() => Role, () => UserRoles)
   declare roles: Role[];
+
+  @HasMany(() => Organization)
+  declare organizations: Organization[];
+
+  // Organizations where this user is assigned as a master/staff member.
+  @BelongsToMany(() => Organization, () => OrganizationStaff)
+  declare staffOrganizations: Organization[];
+
+  // Services this user (as a master) is able to provide.
+  @BelongsToMany(() => Service, () => StaffService)
+  declare providedServices: Service[];
 
   toJSON() {
     const { password: _password, ...attributes } = this.get();

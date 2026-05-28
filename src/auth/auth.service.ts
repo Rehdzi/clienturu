@@ -26,9 +26,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
-    this.bcryptRounds = Number(
-      this.configService.get('BCRYPT_ROUNDS', 12),
-    );
+    this.bcryptRounds = Number(this.configService.get('BCRYPT_ROUNDS', 12));
     this.refreshSecret =
       this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
     this.refreshExpiresIn = this.configService.get(

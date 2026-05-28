@@ -28,4 +28,4 @@ async function start() {
   await app.listen(PORT, () => console.log('Server started.'));
 }
 
-start();
+void start();
