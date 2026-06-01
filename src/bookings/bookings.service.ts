@@ -259,6 +259,10 @@ export class BookingsService {
     }
     return this.bookingRepository.findAll({
       where: { clientId },
+      include: [
+        { model: this.serviceRepository, include: [Organization] },
+        { model: User, as: 'master', attributes: ['id', 'name', 'phone'] },
+      ],
       order: [['startTime', 'ASC']],
     });
   }
@@ -273,6 +277,10 @@ export class BookingsService {
     }
     return this.bookingRepository.findAll({
       where: { masterId },
+      include: [
+        { model: this.serviceRepository, include: [Organization] },
+        { model: User, as: 'client', attributes: ['id', 'name', 'phone'] },
+      ],
       order: [['startTime', 'ASC']],
     });
   }
