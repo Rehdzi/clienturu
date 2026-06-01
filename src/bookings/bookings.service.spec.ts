@@ -5,6 +5,8 @@ import { AccessTokenPayload } from '../auth/interfaces/jwt-payload.interface';
 import { Service } from '../services/service.model';
 import { Schedule } from '../staff/schedule.model';
 import { StaffService as StaffServiceModel } from '../staff/staff-service.model';
+import { Organization } from '../organization/organization.model';
+import { OrganizationService } from '../organization/organization.service';
 import { Booking } from './booking.model';
 import { BookingsService } from './bookings.service';
 
@@ -47,6 +49,16 @@ describe('BookingsService', () => {
         {
           provide: getModelToken(StaffServiceModel),
           useValue: staffServiceRepository,
+        },
+        // Used by assertParticipant to allow the org owner to act on bookings.
+        {
+          provide: getModelToken(Organization),
+          useValue: { findByPk: jest.fn() },
+        },
+        // Test double for the org-authorization helper used by org-scoped reads.
+        {
+          provide: OrganizationService,
+          useValue: { assertCanManage: jest.fn() },
         },
       ],
     }).compile();

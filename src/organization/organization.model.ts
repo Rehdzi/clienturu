@@ -13,6 +13,9 @@ import { User } from 'src/users/users/users.model';
 import { Service } from 'src/services/service.model';
 import { OrganizationStaff } from 'src/staff/organization-staff.model';
 import { Review } from 'src/reviews/review.model';
+import { Address } from 'src/addresses/address.model';
+
+export type OrganizationStatus = 'pending' | 'active';
 
 interface OrgCreationAttrs {
   name: string;
@@ -45,6 +48,20 @@ export class Organization extends Model<Organization, OrgCreationAttrs> {
   @Column({ type: DataType.DOUBLE, allowNull: true })
   declare rating: number;
 
+  // Approval queue: new organizations land as `pending` and are hidden from the
+  // public catalog until an Admin flips them to `active`.
+  @ApiProperty({
+    example: 'pending',
+    enum: ['pending', 'active'],
+    description: 'Approval status; only `active` orgs are publicly visible',
+  })
+  @Column({
+    type: DataType.ENUM('pending', 'active'),
+    allowNull: false,
+    defaultValue: 'pending',
+  })
+  declare status: OrganizationStatus;
+
   @ApiProperty({
     example: 1,
     description: 'ID of the user who owns this organization',
@@ -65,6 +82,9 @@ export class Organization extends Model<Organization, OrgCreationAttrs> {
 
   @HasMany(() => Review)
   declare reviews: Review[];
+
+  @HasMany(() => Address)
+  declare addresses: Address[];
 
   //TODO: Location, description, etc.
 }

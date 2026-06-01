@@ -12,6 +12,9 @@ import { Schedule } from 'src/staff/schedule.model';
 import { StaffService as StaffServiceModel } from 'src/staff/staff-service.model';
 import { AccessTokenPayload } from 'src/auth/interfaces/jwt-payload.interface';
 import { isAdmin } from 'src/roles/roles.constants';
+import { OrganizationService } from 'src/organization/organization.service';
+import { Organization } from 'src/organization/organization.model';
+import { User } from 'src/users/users/users.model';
 import { Booking, BookingStatus } from './booking.model';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
@@ -31,6 +34,10 @@ export class BookingsService {
     @InjectModel(Schedule) private scheduleRepository: typeof Schedule,
     @InjectModel(StaffServiceModel)
     private staffServiceRepository: typeof StaffServiceModel,
+    @InjectModel(Organization)
+    private organizationRepository: typeof Organization,
+    // Used to gate org-scoped reads on owner/admin authorization.
+    private organizationService: OrganizationService,
   ) {}
 
   // ---- Pure helpers (no DB access) ----------------------------------------
@@ -209,16 +216,28 @@ export class BookingsService {
     });
   }
 
-  // A booking is "owned" by its client and its master; either party (or an
-  // Admin) may view or act on it.
-  private assertParticipant(booking: Booking, user: AccessTokenPayload): void {
-    if (
-      !isAdmin(user.roles) &&
-      booking.clientId !== user.sub &&
-      booking.masterId !== user.sub
-    ) {
-      throw new ForbiddenException('You are not a participant in this booking');
+  // A booking is "owned" by: the client, the master, the org that owns the
+  // service, and any Admin. The org owner is allowed so the calendar UI can
+  // transition statuses without being a direct booking participant.
+  private async assertParticipant(
+    booking: Booking,
+    user: AccessTokenPayload,
+  ): Promise<void> {
+    if (isAdmin(user.roles)) return;
+    if (booking.clientId === user.sub || booking.masterId === user.sub) return;
+
+    const service = await this.serviceRepository.findByPk(booking.serviceId, {
+      attributes: ['id', 'organizationId'],
+    });
+    if (service?.organizationId) {
+      const org = await this.organizationRepository.findByPk(
+        service.organizationId,
+        { attributes: ['id', 'ownerId'] },
+      );
+      if (org?.ownerId === user.sub) return;
     }
+
+    throw new ForbiddenException('You are not a participant in this booking');
   }
 
   async getBookingById(id: number, user: AccessTokenPayload): Promise<Booking> {
@@ -226,7 +245,7 @@ export class BookingsService {
     if (!booking) {
       throw new NotFoundException(`Booking with id ${id} not found`);
     }
-    this.assertParticipant(booking, user);
+    await this.assertParticipant(booking, user);
     return booking;
   }
 
@@ -258,6 +277,61 @@ export class BookingsService {
     });
   }
 
+  // Owner-side calendar feed: every booking for any service of this org that
+  // overlaps the [from, to) window. Authorization is delegated to
+  // OrganizationService.assertCanManage (owner or admin).
+  async getBookingsByOrganization(
+    organizationId: number,
+    user: AccessTokenPayload,
+    range: { from?: string; to?: string },
+  ): Promise<Booking[]> {
+    await this.organizationService.assertCanManage(organizationId, user);
+
+    // Default to the current ISO week (Monday 00:00 UTC) + 7 days.
+    const now = new Date();
+    const day = now.getUTCDay(); // 0 = Sunday .. 6 = Saturday
+    const daysFromMonday = (day + 6) % 7;
+    const defaultFrom = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - daysFromMonday,
+        0,
+        0,
+        0,
+        0,
+      ),
+    );
+    const from = range.from ? new Date(range.from) : defaultFrom;
+    const to = range.to
+      ? new Date(range.to)
+      : new Date(from.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    return this.bookingRepository.findAll({
+      where: { startTime: { [Op.gte]: from, [Op.lt]: to } },
+      include: [
+        {
+          // Scope to this organization by filtering on the joined Service row.
+          model: Service,
+          required: true,
+          where: { organizationId },
+          attributes: ['id', 'name', 'durationMinutes', 'price'],
+        },
+        {
+          model: User,
+          as: 'master',
+          attributes: ['id', 'name', 'phone'],
+        },
+        {
+          model: User,
+          as: 'client',
+          attributes: ['id', 'name', 'phone'],
+        },
+      ],
+      order: [['startTime', 'ASC']],
+    });
+  }
+
   async updateStatus(
     id: number,
     status: BookingStatus,
@@ -268,7 +342,7 @@ export class BookingsService {
       throw new NotFoundException(`Booking with id ${id} not found`);
     }
     // Only a participant (client or master) or an Admin may change the status.
-    this.assertParticipant(booking, user);
+    await this.assertParticipant(booking, user);
 
     if (booking.status === status) {
       throw new BadRequestException(`Booking is already '${status}'`);

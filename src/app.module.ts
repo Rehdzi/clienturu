@@ -21,6 +21,10 @@ import { BookingsModule } from './bookings/bookings.module';
 import { Booking } from './bookings/booking.model';
 import { ReviewsModule } from './reviews/reviews.module';
 import { Review } from './reviews/review.model';
+import { AddressesModule } from './addresses/addresses.module';
+import { Address } from './addresses/address.model';
+import { OwnerApplicationsModule } from './owner-applications/owner-applications.module';
+import { OwnerApplication } from './owner-applications/owner-application.model';
 
 @Module({
   controllers: [],
@@ -59,6 +63,8 @@ import { Review } from './reviews/review.model';
         Schedule,
         Booking,
         Review,
+        Address,
+        OwnerApplication,
       ],
       autoLoadModels: true,
     }),
@@ -70,6 +76,8 @@ import { Review } from './reviews/review.model';
     StaffModule,
     BookingsModule,
     ReviewsModule,
+    AddressesModule,
+    OwnerApplicationsModule,
   ],
 })
 export class AppModule {}
