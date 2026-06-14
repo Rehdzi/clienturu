@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1180" viewBox="0 0 2000 1180" font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="0" y="0" width="2000" height="1180" fill="#ffffff"/>
+<style>.uc{fill:#eef4ff;stroke:#3b6fb5;stroke-width:1.6;}.uca{fill:#fff4e6;stroke:#cc7a1a;stroke-width:1.6;}.uco{fill:#eafaf0;stroke:#2e8b57;stroke-width:1.6;}.ucs{fill:#f5ecfb;stroke:#7a4fb5;stroke-width:1.6;}.ucp{fill:#f3f3f3;stroke:#888;stroke-width:1.6;}.lbl{font-size:14px;fill:#15233a;text-anchor:middle;}.actor{font-size:16px;font-weight:bold;fill:#15233a;text-anchor:middle;}.title{font-size:30px;font-weight:bold;fill:#15233a;text-anchor:middle;}.sys{font-size:18px;font-weight:bold;fill:#5a6b85;text-anchor:middle;}.line{stroke:#7d8aa0;stroke-width:1.3;fill:none;}</style>
+<text x="1000.0" y="48" class="title">Диаграмма вариантов использования — Clienturu</text>
+<rect x="360" y="100" width="1280" height="1020" rx="14" fill="none" stroke="#5a6b85" stroke-width="2"/>
+<text x="1000.0" y="128" class="sys">Система онлайн-записи «Clienturu»</text>
+<g stroke="#15233a" stroke-width="2" fill="none"><circle cx="150" cy="300" r="13"/><line x1="150" y1="313" x2="150" y2="348"/><line x1="128" y1="326" x2="172" y2="326"/><line x1="150" y1="348" x2="132" y2="378"/><line x1="150" y1="348" x2="168" y2="378"/></g>
+<text x="150" y="398" class="actor">Гость</text>
+<g stroke="#15233a" stroke-width="2" fill="none"><circle cx="150" cy="560" r="13"/><line x1="150" y1="573" x2="150" y2="608"/><line x1="128" y1="586" x2="172" y2="586"/><line x1="150" y1="608" x2="132" y2="638"/><line x1="150" y1="608" x2="168" y2="638"/></g>
+<text x="150" y="658" class="actor">Клиент</text>
+<g stroke="#15233a" stroke-width="2" fill="none"><circle cx="150" cy="850" r="13"/><line x1="150" y1="863" x2="150" y2="898"/><line x1="128" y1="876" x2="172" y2="876"/><line x1="150" y1="898" x2="132" y2="928"/><line x1="150" y1="898" x2="168" y2="928"/></g>
+<text x="150" y="948" class="actor">Мастер</text>
+<text x="150" y="966" class="actor">(сотрудник)</text>
+<g stroke="#15233a" stroke-width="2" fill="none"><circle cx="1850" cy="360" r="13"/><line x1="1850" y1="373" x2="1850" y2="408"/><line x1="1828" y1="386" x2="1872" y2="386"/><line x1="1850" y1="408" x2="1832" y2="438"/><line x1="1850" y1="408" x2="1868" y2="438"/></g>
+<text x="1850" y="458" class="actor">Владелец</text>
+<g stroke="#15233a" stroke-width="2" fill="none"><circle cx="1850" cy="930" r="13"/><line x1="1850" y1="943" x2="1850" y2="978"/><line x1="1828" y1="956" x2="1872" y2="956"/><line x1="1850" y1="978" x2="1832" y2="1008"/><line x1="1850" y1="978" x2="1868" y2="1008"/></g>
+<text x="1850" y="1028" class="actor">Админи-</text>
+<text x="1850" y="1046" class="actor">стратор</text>
+<ellipse class="ucp" cx="560" cy="185" rx="105.0" ry="34"/>
+<text x="560" y="182" class="lbl">Просмотр каталога</text>
+<text x="560" y="198" class="lbl">организаций</text>
+<ellipse class="ucp" cx="560" cy="270" rx="105.0" ry="34"/>
+<text x="560" y="267" class="lbl">Просмотр организации,</text>
+<text x="560" y="283" class="lbl">услуг и отзывов</text>
+<ellipse class="ucp" cx="560" cy="355" rx="105.0" ry="34"/>
+<text x="560" y="360" class="lbl">Просмотр свободных слотов</text>
+<ellipse class="ucp" cx="560" cy="440" rx="105.0" ry="34"/>
+<text x="560" y="445" class="lbl">Регистрация</text>
+<ellipse class="ucp" cx="560" cy="525" rx="105.0" ry="34"/>
+<text x="560" y="530" class="lbl">Вход в систему</text>
+<ellipse class="ucs" cx="560" cy="770" rx="105.0" ry="34"/>
+<text x="560" y="775" class="lbl">Просмотр своего расписания</text>
+<ellipse class="ucs" cx="560" cy="860" rx="105.0" ry="34"/>
+<text x="560" y="857" class="lbl">Просмотр назначенных</text>
+<text x="560" y="873" class="lbl">записей</text>
+<ellipse class="ucs" cx="560" cy="950" rx="105.0" ry="34"/>
+<text x="560" y="947" class="lbl">Подтверждение / завершение</text>
+<text x="560" y="963" class="lbl">записи</text>
+<ellipse class="uc" cx="850" cy="230" rx="105.0" ry="34"/>
+<text x="850" y="235" class="lbl">Бронирование услуги</text>
+<ellipse class="uc" cx="850" cy="330" rx="105.0" ry="34"/>
+<text x="850" y="335" class="lbl">Просмотр своих записей</text>
+<ellipse class="uc" cx="850" cy="430" rx="105.0" ry="34"/>
+<text x="850" y="435" class="lbl">Отмена своей записи</text>
+<ellipse class="uc" cx="850" cy="530" rx="105.0" ry="34"/>
+<text x="850" y="535" class="lbl">Оставить / удалить отзыв</text>
+<ellipse class="uc" cx="850" cy="630" rx="105.0" ry="34"/>
+<text x="850" y="627" class="lbl">Подать заявку на роль</text>
+<text x="850" y="643" class="lbl">владельца</text>
+<ellipse class="uc" cx="850" cy="730" rx="105.0" ry="34"/>
+<text x="850" y="735" class="lbl">Настройки профиля</text>
+<ellipse class="uco" cx="1170" cy="210" rx="105.0" ry="34"/>
+<text x="1170" y="207" class="lbl">Создание и управление</text>
+<text x="1170" y="223" class="lbl">организацией</text>
+<ellipse class="uco" cx="1170" cy="320" rx="105.0" ry="34"/>
+<text x="1170" y="317" class="lbl">Подача организации на</text>
+<text x="1170" y="333" class="lbl">модерацию</text>
+<ellipse class="uco" cx="1170" cy="430" rx="105.0" ry="34"/>
+<text x="1170" y="435" class="lbl">Управление услугами</text>
+<ellipse class="uco" cx="1170" cy="540" rx="105.0" ry="34"/>
+<text x="1170" y="545" class="lbl">Управление адресами</text>
+<ellipse class="uco" cx="1460" cy="210" rx="105.0" ry="34"/>
+<text x="1460" y="215" class="lbl">Управление персоналом</text>
+<ellipse class="uco" cx="1460" cy="320" rx="105.0" ry="34"/>
+<text x="1460" y="325" class="lbl">Назначение услуг мастеру</text>
+<ellipse class="uco" cx="1460" cy="430" rx="105.0" ry="34"/>
+<text x="1460" y="427" class="lbl">Настройка расписания</text>
+<text x="1460" y="443" class="lbl">мастера</text>
+<ellipse class="uco" cx="1460" cy="540" rx="105.0" ry="34"/>
+<text x="1460" y="537" class="lbl">Просмотр записей и</text>
+<text x="1460" y="553" class="lbl">календаря организации</text>
+<ellipse class="uca" cx="1460" cy="770" rx="105.0" ry="34"/>
+<text x="1460" y="775" class="lbl">Управление пользователями</text>
+<ellipse class="uca" cx="1460" cy="870" rx="105.0" ry="34"/>
+<text x="1460" y="867" class="lbl">Модерация организаций</text>
+<text x="1460" y="883" class="lbl">(одобрить / отклонить)</text>
+<ellipse class="uca" cx="1460" cy="980" rx="105.0" ry="34"/>
+<text x="1460" y="977" class="lbl">Рассмотрение заявок</text>
+<text x="1460" y="993" class="lbl">владельцев</text>
+<ellipse class="uca" cx="1460" cy="1080" rx="105.0" ry="34"/>
+<text x="1460" y="1085" class="lbl">Управление ролями</text>
+<line class="line" x1="172" y1="326" x2="455.0" y2="185"/>
+<line class="line" x1="172" y1="326" x2="455.0" y2="270"/>
+<line class="line" x1="172" y1="326" x2="455.0" y2="355"/>
+<line class="line" x1="172" y1="326" x2="455.0" y2="440"/>
+<line class="line" x1="172" y1="326" x2="455.0" y2="525"/>
+<line class="line" x1="172" y1="586" x2="745.0" y2="230"/>
+<line class="line" x1="172" y1="586" x2="745.0" y2="330"/>
+<line class="line" x1="172" y1="586" x2="745.0" y2="430"/>
+<line class="line" x1="172" y1="586" x2="745.0" y2="530"/>
+<line class="line" x1="172" y1="586" x2="745.0" y2="630"/>
+<line class="line" x1="172" y1="586" x2="745.0" y2="730"/>
+<line class="line" x1="172" y1="876" x2="455.0" y2="770"/>
+<line class="line" x1="172" y1="876" x2="455.0" y2="860"/>
+<line class="line" x1="172" y1="876" x2="455.0" y2="950"/>
+<line class="line" x1="1828" y1="386" x2="1275.0" y2="210"/>
+<line class="line" x1="1828" y1="386" x2="1275.0" y2="320"/>
+<line class="line" x1="1828" y1="386" x2="1275.0" y2="430"/>
+<line class="line" x1="1828" y1="386" x2="1275.0" y2="540"/>
+<line class="line" x1="1828" y1="386" x2="1565.0" y2="210"/>
+<line class="line" x1="1828" y1="386" x2="1565.0" y2="320"/>
+<line class="line" x1="1828" y1="386" x2="1565.0" y2="430"/>
+<line class="line" x1="1828" y1="386" x2="1565.0" y2="540"/>
+<line class="line" x1="1828" y1="956" x2="1565.0" y2="770"/>
+<line class="line" x1="1828" y1="956" x2="1565.0" y2="870"/>
+<line class="line" x1="1828" y1="956" x2="1565.0" y2="980"/>
+<line class="line" x1="1828" y1="956" x2="1565.0" y2="1080"/>
+<rect class="ucp" x="700" y="1138" width="26" height="18" rx="4"/>
+<text x="734" y="1152" font-size="15" fill="#15233a">Публичные</text>
+<rect class="uc" x="830" y="1138" width="26" height="18" rx="4"/>
+<text x="864" y="1152" font-size="15" fill="#15233a">Клиент</text>
+<rect class="ucs" x="960" y="1138" width="26" height="18" rx="4"/>
+<text x="994" y="1152" font-size="15" fill="#15233a">Мастер</text>
+<rect class="uco" x="1090" y="1138" width="26" height="18" rx="4"/>
+<text x="1124" y="1152" font-size="15" fill="#15233a">Владелец</text>
+<rect class="uca" x="1220" y="1138" width="26" height="18" rx="4"/>
+<text x="1254" y="1152" font-size="15" fill="#15233a">Админ</text>
+</svg>

@@ -48,8 +48,6 @@ export class Organization extends Model<Organization, OrgCreationAttrs> {
   @Column({ type: DataType.DOUBLE, allowNull: true })
   declare rating: number;
 
-  // Approval queue: new organizations land as `pending` and are hidden from the
-  // public catalog until an Admin flips them to `active`.
   @ApiProperty({
     example: 'pending',
     enum: ['pending', 'active'],
@@ -76,7 +74,6 @@ export class Organization extends Model<Organization, OrgCreationAttrs> {
   @HasMany(() => Service)
   declare services: Service[];
 
-  // Masters (staff users) working at this organization, via the join table.
   @BelongsToMany(() => User, () => OrganizationStaff)
   declare staff: User[];
 

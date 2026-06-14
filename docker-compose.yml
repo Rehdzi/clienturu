@@ -1,26 +1,30 @@
-version: '3.9'
+# ============================================================================
+# clienturu — полный деплой бэкенда в контейнерах.
+# Фронт пробрасывается отдельно (nginx на сервере), поэтому в стек не включён.
+#
+#   docker compose up -d --build          # минимальный набор: БД + API + бутстрап
+#   docker compose --profile tools up -d  # дополнительно поднять Adminer (UI для БД)
+#
+# Секреты/настройки берутся из .env (см. .env.example). POSTGRES_HOST внутри
+# сети контейнеров переопределяется на имя сервиса `postgres`.
+# ============================================================================
+
+name: clienturu
 
 services:
+  # --- PostgreSQL + PostGIS ---------------------------------------------------
   postgres:
-    image: postgis:18-3.6-alpine
-    container_name: db
+    image: postgis/postgis:17-3.5-alpine
+    container_name: clienturu-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: clienturu
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
+      POSTGRES_DB: ${POSTGRES_DB:-clienturu}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - ./pgdata:/var/lib/postgresql/data/pgdata
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
+      - pgdata:/var/lib/postgresql/data/pgdata
     command: >
       postgres -c max_connections=1000
                -c shared_buffers=256MB
@@ -30,13 +34,69 @@ services:
                -c wal_buffers=16MB
                -c default_statistics_target=100
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d clienturu" ]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-clienturu}"]
+      interval: 10s
+      timeout: 5s
       retries: 5
     restart: unless-stopped
-    tty: true
-    stdin_open: true
+
+  # --- NestJS API -------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: clienturu-backend:latest
+    container_name: clienturu-backend
+    env_file: .env
+    environment:
+      # внутри docker-сети БД доступна по имени сервиса, а не localhost
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      # внутренний порт приложения фиксируем на 5050; наружу — через BACKEND_PORT
+      PORT: 5050
+    ports:
+      - "${BACKEND_PORT:-5050}:5050"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:'+(process.env.PORT||5050)+'/api/docs-json',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # --- Одноразовый бутстрап БД: PostGIS-слой + демо-данные --------------------
+  db-init:
+    image: postgres:17-alpine
+    container_name: clienturu-db-init
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    volumes:
+      - ./docker:/docker:ro
+    entrypoint: ["sh", "/docker/db-init.sh"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: "no"
+
+  # --- Adminer: веб-UI для БД (опционально, профиль tools) --------------------
+  adminer:
+    image: adminer:5
+    container_name: clienturu-adminer
+    profiles: ["tools"]
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DEFAULT_DB: ${POSTGRES_DB:-clienturu}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   pgdata:

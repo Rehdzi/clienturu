@@ -45,11 +45,9 @@ export class User extends Model<User, UserCreationAttrs> {
   @HasMany(() => Organization)
   declare organizations: Organization[];
 
-  // Organizations where this user is assigned as a master/staff member.
   @BelongsToMany(() => Organization, () => OrganizationStaff)
   declare staffOrganizations: Organization[];
 
-  // Services this user (as a master) is able to provide.
   @BelongsToMany(() => Service, () => StaffService)
   declare providedServices: Service[];
 
