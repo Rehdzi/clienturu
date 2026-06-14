@@ -14,7 +14,9 @@ name: clienturu
 services:
   # --- PostgreSQL + PostGIS ---------------------------------------------------
   postgres:
-    image: postgis/postgis:17-3.5-alpine
+    # imresamu/postgis — мультиарх-форк PostGIS (amd64 + arm64), drop-in замена
+    # официального postgis/postgis, у которого arm64-сборок нет. Нужно для RPi5 (arm64).
+    image: ${POSTGRES_IMAGE:-imresamu/postgis:17-3.5-alpine}
     container_name: clienturu-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
