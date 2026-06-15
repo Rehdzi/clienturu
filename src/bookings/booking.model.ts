@@ -11,7 +11,6 @@ import { User } from 'src/users/users/users.model';
 import { Organization } from 'src/organization/organization.model';
 import { Service } from 'src/services/service.model';
 
-// Lifecycle status of a booking (запись).
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
 interface BookingCreationAttrs {
@@ -24,11 +23,6 @@ interface BookingCreationAttrs {
   comment?: string;
 }
 
-// A client's booking of a service with a particular master for a concrete time slot.
-// Timezone assumption: startTime/endTime are stored as UTC timestamps. The slot
-// generator derives candidate slots by combining the booking's calendar date with
-// the master's "HH:mm" working hours (interpreted in that same wall-clock frame),
-// so the comparison is consistent on both the availability and create paths.
 @Table({ tableName: 'bookings' })
 export class Booking extends Model<Booking, BookingCreationAttrs> {
   @ApiProperty({ example: 1, description: 'Booking ID' })
