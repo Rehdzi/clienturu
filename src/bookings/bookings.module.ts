@@ -23,7 +23,6 @@ import { Booking } from './booking.model';
       StaffServiceModel,
       Organization,
     ]),
-    // Pulled in so BookingsService can call OrganizationService.assertCanManage.
     OrganizationModule,
   ],
   exports: [BookingsService],
