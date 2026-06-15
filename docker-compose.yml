@@ -1,21 +1,8 @@
-# ============================================================================
-# clienturu — полный деплой бэкенда в контейнерах.
-# Фронт пробрасывается отдельно (nginx на сервере), поэтому в стек не включён.
-#
-#   docker compose up -d --build          # минимальный набор: БД + API + бутстрап
-#   docker compose --profile tools up -d  # дополнительно поднять Adminer (UI для БД)
-#
-# Секреты/настройки берутся из .env (см. .env.example). POSTGRES_HOST внутри
-# сети контейнеров переопределяется на имя сервиса `postgres`.
-# ============================================================================
-
 name: clienturu
 
 services:
   # --- PostgreSQL + PostGIS ---------------------------------------------------
   postgres:
-    # imresamu/postgis — мультиарх-форк PostGIS (amd64 + arm64), drop-in замена
-    # официального postgis/postgis, у которого arm64-сборок нет. Нужно для RPi5 (arm64).
     image: ${POSTGRES_IMAGE:-imresamu/postgis:17-3.5-alpine}
     container_name: clienturu-db
     environment:
@@ -69,7 +56,6 @@ services:
       start_period: 30s
     restart: unless-stopped
 
-  # --- Одноразовый бутстрап БД: PostGIS-слой + демо-данные --------------------
   db-init:
     image: postgres:17-alpine
     container_name: clienturu-db-init
@@ -85,7 +71,6 @@ services:
         condition: service_healthy
     restart: "no"
 
-  # --- Adminer: веб-UI для БД (опционально, профиль tools) --------------------
   adminer:
     image: adminer:5
     container_name: clienturu-adminer
