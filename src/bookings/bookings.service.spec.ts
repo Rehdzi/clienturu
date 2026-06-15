@@ -10,8 +10,6 @@ import { OrganizationService } from '../organization/organization.service';
 import { Booking } from './booking.model';
 import { BookingsService } from './bookings.service';
 
-// An Admin actor bypasses the participant/identity checks so these tests can
-// focus on the booking logic itself (slot validation, status lifecycle).
 const actor: AccessTokenPayload = {
   sub: 5,
   phone: '0000000000',
@@ -50,12 +48,10 @@ describe('BookingsService', () => {
           provide: getModelToken(StaffServiceModel),
           useValue: staffServiceRepository,
         },
-        // Used by assertParticipant to allow the org owner to act on bookings.
         {
           provide: getModelToken(Organization),
           useValue: { findByPk: jest.fn() },
         },
-        // Test double for the org-authorization helper used by org-scoped reads.
         {
           provide: OrganizationService,
           useValue: { assertCanManage: jest.fn() },
@@ -70,7 +66,6 @@ describe('BookingsService', () => {
     expect(service).toBeDefined();
   });
 
-  // ---- Pure slot-generation helper ---------------------------------------
 
   describe('generateFreeSlots', () => {
     it('yields 09:00, 10:00, 11:00 for a 09:00-12:00 day with a 60-min service', () => {
@@ -125,8 +120,6 @@ describe('BookingsService', () => {
     });
   });
 
-  // ---- getAvailableSlots integrates the helper with the repos -------------
-
   it('getAvailableSlots returns 09:00 and 11:00 when 10:00 is already booked', async () => {
     const date = '2026-05-25'; // a Monday -> dayOfWeek 1
     serviceRepository.findByPk.mockResolvedValue({
@@ -157,7 +150,6 @@ describe('BookingsService', () => {
     ]);
   });
 
-  // ---- Double-booking rejection on create ---------------------------------
 
   it('createBooking rejects an overlapping slot with a ConflictException', async () => {
     const start = new Date(Date.now() + 24 * 60 * 60 * 1000); // tomorrow, not in the past
@@ -218,7 +210,6 @@ describe('BookingsService', () => {
     expect(bookingRepository.create).toHaveBeenCalledTimes(1);
   });
 
-  // ---- Status lifecycle ----------------------------------------------------
 
   it('updateStatus allows pending -> confirmed', async () => {
     const update = jest.fn().mockResolvedValue({ id: 1, status: 'confirmed' });
