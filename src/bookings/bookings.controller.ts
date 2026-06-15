@@ -19,8 +19,6 @@ import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import { AvailableSlotsQueryDto } from './dto/available-slots.query.dto';
 import { OrganizationBookingsQueryDto } from './dto/organization-bookings.query.dto';
 
-// Owner-side calendar feed lives on its own controller so it can mount under
-// `/organization/:orgId/bookings` without sharing the `bookings` prefix.
 @Controller('organization')
 export class OrganizationBookingsController {
   constructor(private bookingsService: BookingsService) {}
@@ -58,9 +56,6 @@ export class OrganizationBookingsController {
 export class BookingsController {
   constructor(private bookingsService: BookingsService) {}
 
-  // List free slot start times for a master/service on a given date. Public:
-  // clients browse availability before authenticating to book.
-  // GET /bookings/available?masterId=&serviceId=&date=YYYY-MM-DD
   @Get('available')
   async getAvailableSlots(@Query() query: AvailableSlotsQueryDto) {
     return this.bookingsService.getAvailableSlots(
@@ -70,8 +65,6 @@ export class BookingsController {
     );
   }
 
-  // Create a booking for a slot. The slot is re-validated server-side and the
-  // client identity is taken from the token, not the request body.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -82,7 +75,6 @@ export class BookingsController {
     return this.bookingsService.createBooking(dto, user);
   }
 
-  // List bookings for a client or a master, e.g. GET /bookings?clientId=1 or ?masterId=1
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get()
