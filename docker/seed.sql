@@ -1,11 +1,6 @@
--- ============================================================================
--- clienturu — пересоздание данных: очистка тестовых + наполнение моковыми.
--- Демо-пароль всех пользователей: "password123" (bcrypt, 12 rounds).
--- Запускается одной транзакцией. geom в addresses заполняется триггером.
--- ============================================================================
+
 BEGIN;
 
--- 1. Полная очистка (роли тоже пересоздаём для детерминированных id) ----------
 TRUNCATE TABLE
   owner_applications, reviews, bookings, schedules, staff_services,
   organization_staff, services, addresses, organizations,
@@ -15,14 +10,12 @@ TRUNCATE TABLE
 -- общий хеш пароля "password123"
 -- $2b$12$z8NDsRSSnaFUnvS59817AeD9AIVsBWZ9JM7mqBd38egFcNvMOCSIy
 
--- 2. Роли --------------------------------------------------------------------
 INSERT INTO roles (id, value, description, "createdAt", "updatedAt") VALUES
   (1, 'Admin', 'Администратор системы', NOW(), NOW()),
   (2, 'User',  'Обычный пользователь (клиент)', NOW(), NOW()),
   (3, 'Staff', 'Мастер / сотрудник организации', NOW(), NOW()),
   (4, 'Owner', 'Владелец организации', NOW(), NOW());
 
--- 3. Пользователи ------------------------------------------------------------
 -- id 1: админ; 2-5: владельцы; 6-12: мастера; 13-20: клиенты
 INSERT INTO users (id, phone, name, email, password, "createdAt", "updatedAt") VALUES
   (1,  '79990000001', 'Администратор',    'admin@clienturu.ru',   '$2b$12$z8NDsRSSnaFUnvS59817AeD9AIVsBWZ9JM7mqBd38egFcNvMOCSIy', NOW(), NOW()),
@@ -46,7 +39,6 @@ INSERT INTO users (id, phone, name, email, password, "createdAt", "updatedAt") V
   (19, '79991110019', 'Юлия Васильева',    'julia.v@mail.ru',      '$2b$12$z8NDsRSSnaFUnvS59817AeD9AIVsBWZ9JM7mqBd38egFcNvMOCSIy', NOW(), NOW()),
   (20, '79991110020', 'Роман Соловьёв',    'roman.s@mail.ru',      '$2b$12$z8NDsRSSnaFUnvS59817AeD9AIVsBWZ9JM7mqBd38egFcNvMOCSIy', NOW(), NOW());
 
--- 4. Связь пользователь-роль -------------------------------------------------
 INSERT INTO user_roles ("userId", "roleId") VALUES
   (1,1),(1,2),                                  -- админ
   (2,2),(2,4),(3,2),(3,4),(4,2),(4,4),(5,2),(5,4), -- владельцы
@@ -54,7 +46,6 @@ INSERT INTO user_roles ("userId", "roleId") VALUES
   (10,2),(10,3),(11,2),(11,3),(12,2),(12,3),
   (13,2),(14,2),(15,2),(16,2),(17,2),(18,2),(19,2),(20,2); -- клиенты
 
--- 5. Организации -------------------------------------------------------------
 -- rating проставим позже из отзывов; org 4 — на модерации (pending)
 INSERT INTO organizations (id, name, email, phone, rating, status, "ownerId", "createdAt", "updatedAt") VALUES
   (1, 'Студия красоты «Локон»', 'info@lokon.ru',    '74951234567', NULL, 'active',  2, NOW(), NOW()),
@@ -62,7 +53,6 @@ INSERT INTO organizations (id, name, email, phone, rating, status, "ownerId", "c
   (3, 'Ногтевая студия «Миндаль»','info@mindal.ru', '78123456789', NULL, 'active',  4, NOW(), NOW()),
   (4, 'Спа-салон «Лотос»',      'info@lotos.ru',    '74953456789', NULL, 'pending', 5, NOW(), NOW());
 
--- 6. Адреса (geom заполнит триггер из latitude/longitude) ---------------------
 INSERT INTO addresses (id, "organizationId", city, street, label, latitude, longitude, "isPrimary", "createdAt", "updatedAt") VALUES
   (1, 1, 'Москва',          'ул. Тверская, 12',          'Главная студия',   55.7615, 37.6094, true,  NOW(), NOW()),
   (2, 1, 'Москва',          'Ленинский проспект, 45',    'Филиал на Юго-Западе', 55.7045, 37.5805, false, NOW(), NOW()),
@@ -70,7 +60,6 @@ INSERT INTO addresses (id, "organizationId", city, street, label, latitude, long
   (4, 3, 'Санкт-Петербург', 'Невский проспект, 78',      'Студия «Миндаль»',  59.9333, 30.3486, true,  NOW(), NOW()),
   (5, 4, 'Москва',          'ул. Арбат, 15',             'Спа-салон «Лотос»', 55.7494, 37.5917, true,  NOW(), NOW());
 
--- 7. Услуги ------------------------------------------------------------------
 INSERT INTO services (id, "organizationId", name, description, price, "durationMinutes", "isActive", "createdAt", "updatedAt") VALUES
   -- Локон (org 1)
   (1, 1, 'Женская стрижка',      'Стрижка любой сложности с мытьём головы', 1500, 60,  true, NOW(), NOW()),
@@ -88,28 +77,23 @@ INSERT INTO services (id, "organizationId", name, description, price, "durationM
   (10, 4, 'Спа-массаж',          'Расслабляющий массаж всего тела, 60 минут', 3500, 60, true, NOW(), NOW()),
   (11, 4, 'Спа-программа «Лотос»','Комплексная программа: пилинг, массаж, обёртывание', 5000, 120, true, NOW(), NOW());
 
--- 8. Мастера в организациях --------------------------------------------------
 INSERT INTO organization_staff ("organizationId", "userId") VALUES
   (1,6),(1,7),    -- Локон: Морозова, Белова
   (2,8),(2,9),    -- Бородач: Громов, Лебедев
   (3,10),(3,11),  -- Миндаль: Зайцева, Орлова
   (4,12);         -- Лотос: Раджабов
 
--- 9. Какие услуги выполняет каждый мастер ------------------------------------
 INSERT INTO staff_services ("userId", "serviceId") VALUES
   (6,1),(6,2),(6,3), (7,1),(7,2),(7,3),         -- мастера Локона: все услуги org1
   (8,4),(8,5),(8,6), (9,4),(9,5),(9,6),         -- мастера Бородача
   (10,7),(10,8),(10,9), (11,7),(11,8),(11,9),   -- мастера Миндаля
   (12,10),(12,11);                               -- мастер Лотоса
 
--- 10. Графики работы мастеров (dayOfWeek: 0=Вс..6=Сб) ------------------------
--- Пн-Сб 10:00-20:00 для всех мастеров
 INSERT INTO schedules ("userId", "organizationId", "dayOfWeek", "startTime", "endTime", "createdAt", "updatedAt")
 SELECT u.uid, u.oid, d.dow, '10:00', '20:00', NOW(), NOW()
 FROM (VALUES (6,1),(7,1),(8,2),(9,2),(10,3),(11,3),(12,4)) AS u(uid,oid)
 CROSS JOIN (VALUES (1),(2),(3),(4),(5),(6)) AS d(dow);
 
--- 11. Записи (bookings). Сегодня условно 2026-06-08 -------------------------
 INSERT INTO bookings (id, "clientId", "organizationId", "serviceId", "masterId", "startTime", "endTime", status, comment, "createdAt", "updatedAt") VALUES
   -- завершённые (прошлое)
   (1, 13, 1, 1, 6, '2026-05-20 09:00:00+00', '2026-05-20 10:00:00+00', 'completed', NULL, NOW(), NOW()),
@@ -128,7 +112,6 @@ INSERT INTO bookings (id, "clientId", "organizationId", "serviceId", "masterId",
   (11,15, 1, 1, 6, '2026-06-15 09:00:00+00', '2026-06-15 10:00:00+00', 'pending', NULL, NOW(), NOW()),
   (12,16, 2, 4, 9, '2026-06-16 13:00:00+00', '2026-06-16 13:45:00+00', 'pending', 'Первый раз у вас', NOW(), NOW());
 
--- 12. Отзывы (по завершённым визитам) ---------------------------------------
 INSERT INTO reviews (id, "organizationId", "clientId", "bookingId", rating, comment, "createdAt", "updatedAt") VALUES
   (1, 1, 13, 1, 5, 'Отличная стрижка, мастер Ольга — золотые руки! Обязательно вернусь.', NOW(), NOW()),
   (2, 2, 14, 2, 4, 'Хорошая работа, но пришлось немного подождать. В целом доволен.', NOW(), NOW()),
@@ -137,14 +120,12 @@ INSERT INTO reviews (id, "organizationId", "clientId", "bookingId", rating, comm
   (5, 2, 17, 5, 4, 'Аккуратно подстригли бороду, приду ещё.', NOW(), NOW()),
   (6, 3, 18, 6, 3, 'Педикюр неплохой, но хотелось бы побольше внимания к деталям.', NOW(), NOW());
 
--- 13. Пересчёт рейтинга организаций из отзывов --------------------------------
 UPDATE organizations o
 SET rating = sub.avg_rating
 FROM (SELECT "organizationId", ROUND(AVG(rating)::numeric, 2) AS avg_rating
       FROM reviews GROUP BY "organizationId") sub
 WHERE o.id = sub."organizationId";
 
--- 14. Заявки на статус владельца --------------------------------------------
 INSERT INTO owner_applications
   (id, "userId", status, "orgName", "orgPhone", "orgEmail", "addressCity", "addressStreet", "addressLabel", latitude, longitude, comment, "rejectionReason", "reviewedBy", "reviewedAt", "createdAt", "updatedAt") VALUES
   -- на рассмотрении
@@ -154,7 +135,6 @@ INSERT INTO owner_applications
   -- отклонённая
   (3, 19, 'rejected', 'Барбершоп «Бритва»', '74951112233', NULL, 'Москва', 'без адреса', NULL, NULL, NULL, 'Хочу открыть барбершоп.', 'Не указан корректный адрес и контактный телефон организации.', 1, '2026-06-06 14:30:00+00', NOW(), NOW());
 
--- 15. Сброс sequence-ов на корректные следующие значения ---------------------
 SELECT setval('roles_id_seq',              (SELECT MAX(id) FROM roles));
 SELECT setval('users_id_seq',              (SELECT MAX(id) FROM users));
 SELECT setval('organizations_id_seq',      (SELECT MAX(id) FROM organizations));
